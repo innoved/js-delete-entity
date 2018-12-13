@@ -1,3 +1,5 @@
+import './delete-entity.scss';
+
 //import innovedFlashMessage from './../../packages/js-flash-message/flash-message.js';
 
 (function($) {
