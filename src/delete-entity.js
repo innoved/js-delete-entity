@@ -137,7 +137,14 @@ import innovedFlashMessage from 'js-flash-message/src/flash-message';
         * Public methods
         */
         this.confirm = function(data) {
+
             settings.onPreConfirm.call(obj);
+
+            //run modal method
+            if(typeof data.confirmType !== undefined && data.confirmType == 'modal') {
+                emsSimpleModals.openModal($deleteButton);
+                return false;
+            }
     
             if(data.event === undefined) {
                 errorMsg();
@@ -199,14 +206,14 @@ import innovedFlashMessage from 'js-flash-message/src/flash-message';
         };
     
         //force delete with no confirmation
-        this.force = function(settings) {
+        this.force = function(data) {
     
             settings.onClickForce.call(obj);
     
             var target = getTarget(event),
                 $deleteButton = $(event.currentTarget);
     
-            settings.event.stopPropagation();
+            data.event.stopPropagation();
             const $deleteBox = buildDeleteBox($deleteButton);
     
             if(!$deleteButton.hasClass(namespace.classPrefix+'btn-selected')) {
@@ -214,7 +221,7 @@ import innovedFlashMessage from 'js-flash-message/src/flash-message';
                 setTimeout(function(){
                     $deleteButton.addClass(namespace.classPrefix+'-btn-selected');
                 },50);
-                runDelete(target, $deleteButton, $deleteBox, settings.animation);
+                runDelete(target, $deleteButton, $deleteBox, data.animation);
             } else {
                 return false;
             }
