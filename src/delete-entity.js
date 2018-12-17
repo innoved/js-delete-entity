@@ -223,7 +223,7 @@ import innovedFlashMessage from 'js-flash-message/src/flash-message';
   
     };
   
-    $.innovedDeleteEntity = function(options) {
+    $.fn.innovedDeleteEntity = function(options) {
       const $element = $(this);
   
       //return early if this element already has a plugin instance
@@ -259,4 +259,4 @@ import innovedFlashMessage from 'js-flash-message/src/flash-message';
   
       return innovedDeleteEntity;
     };
-  })(jQuery);
+})(jQuery);
