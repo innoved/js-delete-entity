@@ -15,7 +15,7 @@
         <div data-guid-target="guid_to_delete">DELETE ME</div>
 
         <div style="margin: 100px">
-            <a class="js-delete-btn" data-delete="force" data-target-guid="guid_to_delete" data-target-name="lang_name_key" href="#">click</a>    
+            <a class="js-delete-btn" data-delete="persist-to-db" data-target-guid="guid_to_delete" data-target-name="lang_name_key" href="#">click</a>    
         </div>
 
         <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
@@ -24,8 +24,7 @@
 
         <script>
             $(document).ready(function() {
-            $('.js-delete-btn').innovedDeleteEntity();
-            //$('.js-delete-btn').innovedDeleteEntity();
+                $('.js-delete-btn').innovedDeleteEntity();
 
                 // $('.js-ems-delete-btn').on('click', function(e) {
                 //     innovedDeleteEntity.confirm({
@@ -33,7 +32,6 @@
                 //         confirmType: 'modal',
                 //     });
                 // });
-
             });
 
         

@@ -190,8 +190,8 @@ import innovedFlashMessage from 'js-flash-message/src/flash-message';
                     $deleteBox.addClass(namespace.classPrefix+'box-loading');
     
                     //check the deletion method. persist-to-db or the standard method
-                    if(event.currentTarget.dataset.deleteMethod == 'persist-to-db') {
-                        persistToDb($deleteButton, [], [], innovedDeleteEntity.deleteSuccess(target, $deleteButton, $deleteBox, target.$element));
+                    if(data.deleteMethod == 'persist-to-db') {
+                        persistToDb($deleteButton, [], [], deleteSuccess(target, $deleteButton, $deleteBox, target.$element, data.animation));
                     } else {
                         runDelete(target, $deleteButton, $deleteBox, data.animation);
                     }
@@ -231,39 +231,49 @@ import innovedFlashMessage from 'js-flash-message/src/flash-message';
     };
   
     $.fn.innovedDeleteEntity = function(options) {
-      const $element = $(this);
-  
-      //return early if this element already has a plugin instance
-      if ($element.data('innovedDeleteEntity')) return $element.data('innovedDeleteEntity');
-  
-      //pass options to plugin constructor
-      const innovedDeleteEntity = new InnovedDeleteEntity(this, options);
-  
-      //store plugin object in this element's data
-      $element.data('innovedDeleteEntity', innovedDeleteEntity);
-  
-      //default events
-      $element.off('click').on('click', function(e) {
-          e.preventDefault();
-          const $this = $(this);
-          
-          /*  preset events from whatever data-delete is set to, 
-          *   if data-delete is not set, the function should be called manually
-          */
-          if($this.data('delete') == 'modal') {
-              innovedDeleteEntity.confirm({event: e,  confirmType: 'modal'});
-          } else if($this.data('delete') == 'confirm') {
-              innovedDeleteEntity.confirm({event: e,  animation: 'slideRight'});
-          } else if($this.data('delete') == 'force') {
-              innovedDeleteEntity.force({event: e,  animation: 'slideRight'});
-          } else {
-              return false;
-          }
-  
-         return false;
-  
-      });
-  
-      return innovedDeleteEntity;
+        const $element = $(this);
+    
+        //return early if this element already has a plugin instance
+        if ($element.data('innovedDeleteEntity')) return $element.data('innovedDeleteEntity');
+    
+        //pass options to plugin constructor
+        const innovedDeleteEntity = new InnovedDeleteEntity(this, options);
+    
+        //store plugin object in this element's data
+        $element.data('innovedDeleteEntity', innovedDeleteEntity);
+    
+        //default events
+        $element.off('click').on('click', function(e) {
+            e.preventDefault();
+            const $this = $(this);
+            
+            /*  preset events from whatever data-delete is set to, 
+            *   if data-delete is not set, the function should be called manually
+            */
+            switch($this.data('delete')) {
+                case 'confirm':
+                    innovedDeleteEntity.confirm({event: e,  animation: 'slideRight'});
+                    break;
+                case 'modal':
+                    innovedDeleteEntity.confirm({event: e,  confirmType: 'modal'});
+                    break;
+                case 'persist-to-db':
+                    innovedDeleteEntity.confirm({event: e,  deleteMethod: 'persist-to-db', animation: 'slideRight'});
+                    break;
+                case 'force':
+                    innovedDeleteEntity.force({event: e,  animation: 'slideRight'});
+                    break;
+                default:
+                    return false;
+            }
+    
+            return false;
+    
+        });
+    
+        return innovedDeleteEntity;
     };
 })(jQuery);
+
+//export for package
+export default $.fn.innovedDeleteEntity();
