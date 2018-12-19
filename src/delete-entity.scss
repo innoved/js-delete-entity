@@ -5,18 +5,18 @@
   }
 }
 
-$classPrefix: js-delete-;
+$classPrefix: js-delete;
 
-.#{$classPrefix}btn {
+.#{$classPrefix}-btn {
   position: relative;
 }
 
-.dropdown .#{$classPrefix}btn {
+.dropdown .#{$classPrefix}-btn {
   position: initial;
 }
 
-.#{$classPrefix}btn {
-  &.#{$classPrefix}btn-selected .#{$classPrefix}box {
+.#{$classPrefix}-btn {
+  &.#{$classPrefix}-btn-selected .#{$classPrefix}-box {
     opacity: 1;
     top: -90px;
     width: 275px;
@@ -26,7 +26,7 @@ $classPrefix: js-delete-;
     @include transition(opacity 0.3s, top 0.3s, width 0s 0s, height 0s 0s);
 
   }
-  .#{$classPrefix}box {
+  .#{$classPrefix}-box {
     position: absolute;
     font-size: 1rem;
     top: -90px;
@@ -57,11 +57,11 @@ $classPrefix: js-delete-;
       left: 50%;
       margin-left: -5px;
     }
-    &.#{$classPrefix}box-hit-edge {
+    &.#{$classPrefix}-box-hit-edge {
       width: auto;
       height: auto;
       padding: 0 10px 20px 10px;
-      span.#{$classPrefix}cancel {
+      span.#{$classPrefix}-cancel {
           margin-bottom: 7px;
       }
       &::after {
@@ -87,13 +87,13 @@ $classPrefix: js-delete-;
       line-height: 25px;
       cursor: pointer;
       @include transition(background-color 0.3s);
-      &.#{$classPrefix}confirm {
+      &.#{$classPrefix}-confirm {
         background: #38B87C;
         &:hover {
           background: #2c9162;
         }
       }
-      &.#{$classPrefix}cancel {
+      &.#{$classPrefix}-cancel {
         background: #696F73;
         &:hover {
           background: #515558;
@@ -117,14 +117,14 @@ $classPrefix: js-delete-;
       @include transition(opacity 0.3s, top 0.3s, left 0.3s);
 
     }
-    &.#{$classPrefix}box-loading:before {
+    &.#{$classPrefix}-box-loading:before {
       opacity: 1;
       width: 100%;
       height: 100%;
       top: 0px;
       left: 0px;
     }
-    &.#{$classPrefix}box-deleted:before {
+    &.#{$classPrefix}-box-deleted:before {
       content: 'Deleted.';
       background: #1c242b url("data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4IgoKCSB3aWR0aD0iNTEycHgiIGhlaWdodD0iNTEycHgiIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBlbmFibGUtYmFja2dyb3VuZD0ibmV3IDAgMCA1MTIgNTEyIiB4bWw6c3BhY2U9InByZXNlcnZlIj4KCjxwb2x5Z29uIGlkPSJjaGVjay1tYXJrLTctaWNvbiIgcG9pbnRzPSI1MCwyNDcuNzg3IDc3LjA5LDIxOS44MzMgMjA5Ljg1OSwyOTkuMjIyIDQzOC43ODcsODEuMjQ1IDQ2MiwxMDQuNSAyMTkuODYzLDQzMC43NTUgIiBmaWxsPSIjRkZGIi8+Cgo8L3N2Zz4=") no-repeat center 55px;
       background-size: 20px 20px;

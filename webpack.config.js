@@ -5,7 +5,7 @@ const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 const packageName = 'delete-entity';
 
 module.exports = {
-  mode: 'production',
+  mode: 'development',
   entry: './src/'+packageName+'.js',
   output: {
     path: path.resolve(__dirname + "/dist"),
