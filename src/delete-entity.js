@@ -27,8 +27,8 @@ import innovedFlashMessage from 'js-flash-message/src/flash-message';
         */
         const errorMsg = function(target) {
             const targetName = target == undefined ? 'item' : target.name;
-            innovedFlashMessage.create('error', 'Something went wrong', 'The '+targetName+' could not be deleted');
-            console.log('Something went wrong', 'The '+targetName+' could not be deleted');
+            innovedFlashMessage.create('error', 'Something went wrong', `The ${targetName} could not be deleted`);
+            console.log('Something went wrong', `The ${targetName} could not be deleted`);
         };
     
         //element exit animation, accepts preset strings and custom function
@@ -74,12 +74,14 @@ import innovedFlashMessage from 'js-flash-message/src/flash-message';
                     exitAnimation(target.$element, animation);
                 }, 500);
             };
-            innovedFlashMessage.create('success', 'The '+target.name+' has been deleted');
+            innovedFlashMessage.create('success', `The ${target.name} has been deleted`);
         };
     
         //deletion request function
         const runDelete = function(target, $deleteButton, $deleteBox, animation) {
             const data = { _token: $('meta[name="_token"]').attr('content') };
+            console.log(data)
+            return false;
             $.ajax({url: $deleteButton[0].href, type: 'DELETE', data:data, dataType: 'json'
             }).done(response => {
                 if(response.success != false) {
@@ -111,27 +113,41 @@ import innovedFlashMessage from 'js-flash-message/src/flash-message';
                 $deleteButton.addClass(namespace.classPrefix+'btn');
             };
             if(!$deleteButton.find('.'+namespace.classPrefix+'box').length) {
-                $deleteButton.append('<span class="'+namespace.classPrefix+'box"><p>Are you sure you want to delete?</p><span class="'+namespace.classPrefix+'cancel">Cancel</span><span class="'+namespace.classPrefix+'confirm">Yes</span></span>');
+                $deleteButton.append(`<span class="${namespace.classPrefix}box"><p>Are you sure you want to delete?</p><span class="${namespace.classPrefix}cancel">Cancel</span><span class="${namespace.classPrefix}confirm">Yes</span></span>`);
             }
-            return $deleteButton.find('.'+namespace.classPrefix+'box');
+            return $deleteButton.find(`.${namespace.classPrefix}box`);
         };
     
         //return the element to delete from the guid
-        const getTarget = function(event) {
-            const target = {
-                guid: event.currentTarget.dataset.targetGuid,
-                $element: $('[data-guid="'+event.currentTarget.dataset.targetGuid+'"]'),
-                name: event.currentTarget.dataset.targetName || 'item'
+        const getTarget = function(event, confirmType) {
+            if(confirmType == 'multi') {
+
+            } else {
+                const target = {
+                    guid: event.currentTarget.dataset.targetGuid,
+                    $element: $('[data-guid="'+event.currentTarget.dataset.targetGuid+'"]'),
+                    name: event.currentTarget.dataset.targetName || 'item'
+                }
             }
+            
+            // ? for single or both
             if(!target.$element.length > 0) {
                 errorMsg(target);
                 console.log(namespace.global+' The target element does not exist in the DOM');
                 return false;
             }
             return target;
+
             //TODO: for multiple selects we can pass an array of guids
         };
-    
+
+        this.checkboxSwitch = function() {
+            var guid = [...Array(10)].map(i=>(~~(Math.random()*36)).toString(36)).join('');
+            $('.js-delete-checkbox-switch').each(function() {
+                //store each in object
+                $(this).replaceWith('<input type="checkbox" class="js-delete-checkbox" data-target-guid="d2" data-guid="'+guid+'">')
+            });
+        };
     
         /**
         * Public methods
@@ -158,7 +174,7 @@ import innovedFlashMessage from 'js-flash-message/src/flash-message';
                 return false;
             }
     
-            const target = getTarget(data.event);
+            const target = getTarget(data.event, data.confirmType);
             const $deleteButton = $(data.event.currentTarget);
     
             data.event.stopPropagation();
@@ -167,7 +183,7 @@ import innovedFlashMessage from 'js-flash-message/src/flash-message';
             if(!$deleteButton.hasClass(namespace.classPrefix+'btn-selected')) {
                 $deleteButton.addClass(namespace.classPrefix+'btn-selected');
     
-                $deleteButton.find('.'+namespace.classPrefix+'cancel').off('click').on('click',function() {
+                $deleteButton.find(`.${namespace.classPrefix}cancel`).off('click').on('click',function() {
                     $deleteButton.removeClass(namespace.classPrefix+'btn-selected');
                     return false;
                 });
@@ -185,7 +201,7 @@ import innovedFlashMessage from 'js-flash-message/src/flash-message';
                     $deleteBox.addClass(namespace.classPrefix+'box-hit-edge');
                 }
     
-                $deleteButton.find('.'+namespace.classPrefix+'confirm').off('click').on('click',function() {
+                $deleteButton.find(`.${namespace.classPrefix}confirm`).off('click').on('click',function() {
                     settings.onConfirm.call(obj);
                     $deleteBox.addClass(namespace.classPrefix+'box-loading');
     
@@ -257,6 +273,9 @@ import innovedFlashMessage from 'js-flash-message/src/flash-message';
                 case 'modal':
                     innovedDeleteEntity.confirm({event: e,  confirmType: 'modal'});
                     break;
+                case 'multi':
+                    innovedDeleteEntity.confirm({event: e,  confirmType: 'multi'});
+                    break;
                 case 'persist-to-db':
                     innovedDeleteEntity.confirm({event: e,  deleteMethod: 'persist-to-db', animation: 'slideRight'});
                     break;
@@ -269,6 +288,11 @@ import innovedFlashMessage from 'js-flash-message/src/flash-message';
     
             return false;
     
+        });
+
+        $('.js-delete-checkbox-switch-btn').on('click', function(e) {
+            e.preventDefault();
+            innovedDeleteEntity.checkboxSwitch();
         });
     
         return innovedDeleteEntity;

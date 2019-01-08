@@ -12,11 +12,31 @@
     </head>
     <body>
 
-        <div data-guid-target="guid_to_delete">DELETE ME</div>
+        <div data-guid="d1">DELETE ME</div>
+        <div data-guid="d2">DELETE ME</div>
+        <div data-guid="d3">DELETE ME</div>
+        <div data-guid="d4">DELETE ME</div>
 
         <div style="margin: 100px">
-            <a class="js-delete-btn" data-delete="persist-to-db" data-target-guid="guid_to_delete" data-target-name="lang_name_key" href="#">click</a>    
+            <a class="js-delete-btn" data-delete="confirm" data-target-guid="guid_to_delete" data-target-name="lang_name_key" href="#">click</a>    
         </div>
+
+        <button class="js-delete-btn" data-delete="multi" data-target-guid="rand">Delete Selected</button>
+        <button class="js-delete-checkbox-switch-btn">Switch</button>
+
+        <div>
+            <div class="js-delete-checkbox-switch" data-target-guid="d1">switch</div>
+            <div class="js-delete-checkbox-switch" data-target-guid="d2">switch</div>
+            <div class="js-delete-checkbox-switch" data-target-guid="d3">switch</div>
+            <div class="js-delete-checkbox-switch" data-target-guid="d4">switch</div>
+        </div>
+        
+        <!-- <div>
+            <input type="checkbox" class="js-delete-checkbox" data-guid="rand"><br>
+            <input type="checkbox" class="js-delete-checkbox" data-target-guid="d2" data-guid="rand"><br>
+            <input type="checkbox" class="js-delete-checkbox" data-target-guid="d3" data-guid="rand"><br>
+            <input type="checkbox" class="js-delete-checkbox" data-target-guid="d4" data-guid="rand"><br>
+        </div> -->
 
         <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
 

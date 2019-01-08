@@ -5,15 +5,16 @@
   "main": "delete-entity.js",
   "scripts": {
     "lint": "echo '=> linting' && jshint src/delete-entity.js",
-    "build": "webpack",
+    "build": "npx babel src/delete-entity.js --out-file delete-entity.js && webpack",
     "watch": "webpack --watch"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@babel/core": "^7.2.0",
-    "@babel/preset-env": "^7.2.0",
-    "babel-core": "^6.26.3",
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.2.3",
+    "@babel/register": "^7.0.0",
     "babel-loader": "^8.0.4",
     "css-loader": "^2.0.0",
     "jshint": "^2.9.7",
@@ -30,6 +31,7 @@
     "webpack-cli": "^3.1.2"
   },
   "dependencies": {
+    "@babel/polyfill": "^7.2.5",
     "js-flash-message": "git+https://github.com/innoved/js-flash-message.git#v1.0.1"
   }
 }
