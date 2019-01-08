@@ -32,6 +32,6 @@
   },
   "dependencies": {
     "@babel/polyfill": "^7.2.5",
-    "js-flash-message": "git+https://github.com/innoved/js-flash-message.git#v1.0.1"
+    "js-flash-message": "git+https://github.com/innoved/js-flash-message.git#v1.0.3"
   }
 }

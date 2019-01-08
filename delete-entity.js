@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-var _flashMessage = _interopRequireDefault(require("js-flash-message/src/flash-message"));
+var _jsFlashMessage = _interopRequireDefault(require("js-flash-message"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -36,7 +36,7 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
     var errorMsg = function errorMsg(target) {
       var targetName = target == undefined ? 'item' : target.name;
 
-      _flashMessage.default.create('error', 'Something went wrong', 'The ' + targetName + ' could not be deleted');
+      _jsFlashMessage.default.create('error', 'Something went wrong', 'The ' + targetName + ' could not be deleted');
 
       console.log('Something went wrong', 'The ' + targetName + ' could not be deleted');
     }; //element exit animation, accepts preset strings and custom function
@@ -98,7 +98,7 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
 
       ;
 
-      _flashMessage.default.create('success', 'The ' + target.name + ' has been deleted');
+      _jsFlashMessage.default.create('success', 'The ' + target.name + ' has been deleted');
     }; //deletion request function
 
 
