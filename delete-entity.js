@@ -11,14 +11,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
-
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
-
 (function ($) {
   'use strict';
 
@@ -44,9 +36,9 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
     var errorMsg = function errorMsg(target) {
       var targetName = target == undefined ? 'item' : target.name;
 
-      _flashMessage.default.create('error', 'Something went wrong', "The ".concat(targetName, " could not be deleted"));
+      _flashMessage.default.create('error', 'Something went wrong', 'The ' + targetName + ' could not be deleted');
 
-      console.log('Something went wrong', "The ".concat(targetName, " could not be deleted"));
+      console.log('Something went wrong', 'The ' + targetName + ' could not be deleted');
     }; //element exit animation, accepts preset strings and custom function
 
 
@@ -106,7 +98,7 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
       ;
 
-      _flashMessage.default.create('success', "The ".concat(target.name, " has been deleted"));
+      _flashMessage.default.create('success', 'The ' + target.name + ' has been deleted');
     }; //deletion request function
 
 
@@ -116,8 +108,6 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       var data = {
         _token: $('meta[name="_token"]').attr('content')
       };
-      console.log(data);
-      return false;
       $.ajax({
         url: $deleteButton[0].href,
         type: 'DELETE',
@@ -160,22 +150,19 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       ;
 
       if (!$deleteButton.find('.' + namespace.classPrefix + 'box').length) {
-        $deleteButton.append("<span class=\"".concat(namespace.classPrefix, "box\"><p>Are you sure you want to delete?</p><span class=\"").concat(namespace.classPrefix, "cancel\">Cancel</span><span class=\"").concat(namespace.classPrefix, "confirm\">Yes</span></span>"));
+        $deleteButton.append('<span class="' + namespace.classPrefix + 'box"><p>Are you sure you want to delete?</p><span class="' + namespace.classPrefix + 'cancel">Cancel</span><span class="' + namespace.classPrefix + 'confirm">Yes</span></span>');
       }
 
-      return $deleteButton.find(".".concat(namespace.classPrefix, "box"));
+      return $deleteButton.find('.' + namespace.classPrefix + 'box');
     }; //return the element to delete from the guid
 
 
-    var getTarget = function getTarget(event, confirmType) {
-      if (confirmType == 'multi') {} else {
-        var _target = {
-          guid: event.currentTarget.dataset.targetGuid,
-          $element: $('[data-guid="' + event.currentTarget.dataset.targetGuid + '"]'),
-          name: event.currentTarget.dataset.targetName || 'item'
-        };
-      } // ? for single or both
-
+    var getTarget = function getTarget(event) {
+      var target = {
+        guid: event.currentTarget.dataset.targetGuid,
+        $element: $('[data-guid="' + event.currentTarget.dataset.targetGuid + '"]'),
+        name: event.currentTarget.dataset.targetName || 'item'
+      };
 
       if (!target.$element.length > 0) {
         errorMsg(target);
@@ -184,17 +171,6 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       }
 
       return target; //TODO: for multiple selects we can pass an array of guids
-    };
-
-    this.checkboxSwitch = function () {
-      var guid = _toConsumableArray(Array(10)).map(function (i) {
-        return (~~(Math.random() * 36)).toString(36);
-      }).join('');
-
-      $('.js-delete-checkbox-switch').each(function () {
-        //store each in object
-        $(this).replaceWith('<input type="checkbox" class="js-delete-checkbox" data-target-guid="d2" data-guid="' + guid + '">');
-      });
     };
     /**
     * Public methods
@@ -221,14 +197,14 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
         return false;
       }
 
-      var target = getTarget(data.event, data.confirmType);
+      var target = getTarget(data.event);
       var $deleteButton = $(data.event.currentTarget);
       data.event.stopPropagation();
       var $deleteBox = buildDeleteBox($deleteButton);
 
       if (!$deleteButton.hasClass(namespace.classPrefix + 'btn-selected')) {
         $deleteButton.addClass(namespace.classPrefix + 'btn-selected');
-        $deleteButton.find(".".concat(namespace.classPrefix, "cancel")).off('click').on('click', function () {
+        $deleteButton.find('.' + namespace.classPrefix + 'cancel').off('click').on('click', function () {
           $deleteButton.removeClass(namespace.classPrefix + 'btn-selected');
           return false;
         }); //if the delete button is in a dropdown, hide the confirmation on close
@@ -246,7 +222,7 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
           $deleteBox.addClass(namespace.classPrefix + 'box-hit-edge');
         }
 
-        $deleteButton.find(".".concat(namespace.classPrefix, "confirm")).off('click').on('click', function () {
+        $deleteButton.find('.' + namespace.classPrefix + 'confirm').off('click').on('click', function () {
           settings.onConfirm.call(obj);
           $deleteBox.addClass(namespace.classPrefix + 'box-loading'); //check the deletion method. persist-to-db or the standard method
 
@@ -318,13 +294,6 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
           });
           break;
 
-        case 'multi':
-          innovedDeleteEntity.confirm({
-            event: e,
-            confirmType: 'multi'
-          });
-          break;
-
         case 'persist-to-db':
           innovedDeleteEntity.confirm({
             event: e,
@@ -345,10 +314,6 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
       }
 
       return false;
-    });
-    $('.js-delete-checkbox-switch-btn').on('click', function (e) {
-      e.preventDefault();
-      innovedDeleteEntity.checkboxSwitch();
     });
     return innovedDeleteEntity;
   };
