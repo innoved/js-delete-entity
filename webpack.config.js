@@ -6,7 +6,7 @@ const packageName = 'delete-entity';
 
 module.exports = {
   mode: 'development',
-  entry: './src/'+packageName+'.js',
+  entry: ["@babel/polyfill", './src/'+packageName+'.js'],
   output: {
     path: path.resolve(__dirname + "/dist"),
     filename: packageName+'.js',

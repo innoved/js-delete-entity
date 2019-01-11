@@ -1,4 +1,4 @@
-import innovedFlashMessage from 'js-flash-message';
+//import innovedFlashMessage from 'js-flash-message';
 
 (function($) {
 
@@ -6,6 +6,7 @@ import innovedFlashMessage from 'js-flash-message';
 
     const InnovedDeleteEntity = function(element, options) {
   
+        let switchArr = [];
         const $deleteButton = $(element);
         const obj = this;
         const namespace = {
@@ -27,7 +28,8 @@ import innovedFlashMessage from 'js-flash-message';
         */
         const errorMsg = function(target) {
             const targetName = target == undefined ? 'item' : target.name;
-            innovedFlashMessage.create('error', 'Something went wrong', `The ${targetName} could not be deleted`);
+            const s = typeof target.guid == 'object' ? 's' : '';
+            innovedFlashMessage.create('error', 'Something went wrong', `The ${targetName + s} could not be deleted`);
             console.log('Something went wrong', `The ${targetName} could not be deleted`);
         };
     
@@ -66,25 +68,48 @@ import innovedFlashMessage from 'js-flash-message';
             settings.onDeleteSuccess.call(this);
             $deleteBox.addClass(namespace.classPrefix+'box-deleted');
             $deleteButton.removeClass(namespace.classPrefix+'btn-selected');
-            setTimeout(function(){
+
+            setTimeout(function() {
                 $deleteBox.removeClass(namespace.classPrefix+'box-loading').removeClass(namespace.classPrefix+'box-deleted');
-            },1000);
+            }, 1000);
+
+            // function timeout(ms) {
+            //     return new Promise(res => setTimeout(res, ms));
+            // }
+
+            // function removeLoadingState() {
+            //     $deleteBox.removeClass(namespace.classPrefix+'box-loading').removeClass(namespace.classPrefix+'box-deleted');
+            // }
+
+            // function removeBox() {
+            //     $deleteBox.remove();
+            // }
+
+            // async function fireEvents() {
+            //     await timeout(1000);
+            //     removeLoadingState();
+            //     removeBox();
+            // }
+
+            // fireEvents();
+
             if(animation != false && animation != undefined) {
                 setTimeout(function() {
-                    exitAnimation(target.$element, animation);
+                    $($(target)[0].$element).each(function() {
+                        exitAnimation($(this), animation);
+                    });
                 }, 500);
             };
-            innovedFlashMessage.create('success', `The ${target.name} has been deleted`);
+            const s = typeof target.guid == 'object' ? 's' : '';
+            innovedFlashMessage.create('success', `The ${target.name + s} has been deleted`);
         };
     
         //deletion request function
         const runDelete = function(target, $deleteButton, $deleteBox, animation) {
             const data = { _token: $('meta[name="_token"]').attr('content') };
 
-            $(target).each(function() {
-                $(this)[0].$element.remove(); //TODO run remove on each elem for multi
-            });
-            return false;
+            //if were sending multiple guids let the backend know
+            data.multi = typeof target.guid == 'object' ? true : false;
             
             $.ajax({url: $deleteButton[0].href, type: 'DELETE', data:data, dataType: 'json'
             }).done(response => {
@@ -125,22 +150,28 @@ import innovedFlashMessage from 'js-flash-message';
         //return the element to delete from the guid
         const getTarget = function(event, confirmType) {
 
-            let target = {};
+            let target = {},
+                guids = [],
+                elements = [];
 
             if(confirmType == 'multi') {
 
-                //loop through each checked element and append the targetGuid to an array
-                let targetGuid = [];
+                //loop through each checked box and append the target guids and jquery elements to an array
                 $('[data-guid="'+event.currentTarget.dataset.targetGuid+'"]:checked').each(function() {
-                    targetGuid.push($(this)[0].dataset.targetGuid);
+                    guids.push($(this)[0].dataset.targetGuid);
+                    elements.push($('[data-guid="'+$(this).data('target-guid')+'"]'));
                 });
 
+                if(guids.length == 0 || elements.length == 0 ) {
+                    return false;
+                }
+
                 target = {
-                    guid: targetGuid,
-                    $element: $('[data-guid="'+event.currentTarget.dataset.targetGuid+'"]:checked'),
+                    guid: guids,
+                    $element: elements,
                     name: event.currentTarget.dataset.targetName || 'item'
                 }
-                
+
             } else {
                 target = {
                     guid: event.currentTarget.dataset.targetGuid,
@@ -149,8 +180,6 @@ import innovedFlashMessage from 'js-flash-message';
                 }
             }
 
-            console.log(target);
-
             if(!target.$element.length > 0) {
                 errorMsg(target);
                 console.log(namespace.global+' The target element to delete does not exist');
@@ -158,31 +187,52 @@ import innovedFlashMessage from 'js-flash-message';
             }
             return target;
 
-            //TODO: for multiple selects we can pass an array of guids
         };
 
-        this.checkboxSwitch = function() {
-            const guid = [...Array(10)].map(i=>(~~(Math.random()*36)).toString(36)).join('');
-            let switchObj = [];
-            $('.js-delete-checkbox-switch').each(function() {
-                //store each in object
-                switchObj.push($(this));
-                $(this).replaceWith('<input type="checkbox" class="js-delete-checkbox" data-target-guid="d2" data-guid="'+guid+'">')
-            }).promise().done(function() {
-                console.log(switchObj);
-            });
-        };
-    
         /**
         * Public methods
         */
+
+        //switch specific targets with checkboxes for multiple deletion method and vice versa
+        this.checkboxSwitch = function($switchBtn) {
+            const guid = [...Array(10)].map(i=>(~~(Math.random()*36)).toString(36)).join('');
+
+            //grab stored elements from array and remove checkboxes
+            if ($('#js-delete-btn-multi').length) {
+                if(options != undefined && 'innerSwitch' in options) {
+                    options.innerSwitch.forEach(function(entry) {
+                        const targetGuid = entry[0].dataset.targetGuid;
+                        $('.js-delete-checkbox[data-target-guid="'+targetGuid+'"]').each(function() {
+                            $(this).replaceWith(entry[0]);
+                        });
+                    });
+                    $('#js-delete-btn-multi').remove();
+                    switchArr = [];
+                    $('#js-delete-btn').innovedDeleteEntity();
+                }
+            } else {
+                //store each element in array and build render checkboxes
+                $('.js-delete-checkbox-switch').each(function() {
+                    switchArr.push($(this));
+                    $(this).replaceWith(`<input type="checkbox" class="js-delete-checkbox" data-target-guid="${$(this).data('target-guid')}" data-guid="${guid}">`)
+                });
+                $switchBtn.after(`<button class="js-delete-btn" id="js-delete-btn-multi" data-delete="multi" data-target-guid="${guid}">Delete Selected</button>`);
+
+                //assign the deletion object and pass the element array
+                $('#js-delete-btn-multi').innovedDeleteEntity({
+                    innerSwitch: switchArr
+                });
+            }
+            
+        };
+        
         this.confirm = function(data) {
 
             settings.onPreConfirm.call(obj);
 
             //run modal method
             if(typeof data.confirmType !== undefined && data.confirmType == 'modal') {
-                emsSimpleModals.openModal($deleteButton);
+                innovedSimpleModal.openModal($(data.event.currentTarget));
                 return false;
             }
     
@@ -199,6 +249,8 @@ import innovedFlashMessage from 'js-flash-message';
             }
     
             const target = getTarget(data.event, data.confirmType);
+            if(target == false) return false;
+
             const $deleteButton = $(data.event.currentTarget);
     
             data.event.stopPropagation();
@@ -292,13 +344,13 @@ import innovedFlashMessage from 'js-flash-message';
             */
             switch($this.data('delete')) {
                 case 'confirm':
-                    innovedDeleteEntity.confirm({event: e,  animation: 'slideRight'});
+                    innovedDeleteEntity.confirm({event: e,  animation: 'fadeOut'});
                     break;
                 case 'modal':
                     innovedDeleteEntity.confirm({event: e,  confirmType: 'modal'});
                     break;
                 case 'multi':
-                    innovedDeleteEntity.confirm({event: e,  confirmType: 'multi'});
+                    innovedDeleteEntity.confirm({event: e,  confirmType: 'multi', animation: 'fadeOut'});
                     break;
                 case 'persist-to-db':
                     innovedDeleteEntity.confirm({event: e,  deleteMethod: 'persist-to-db', animation: 'slideRight'});
@@ -314,9 +366,9 @@ import innovedFlashMessage from 'js-flash-message';
     
         });
 
-        $('.js-delete-checkbox-switch-btn').on('click', function(e) {
+        $('.js-delete-checkbox-switch-btn').off('click').on('click', function(e) {
             e.preventDefault();
-            innovedDeleteEntity.checkboxSwitch();
+            innovedDeleteEntity.checkboxSwitch($(this));
         });
     
         return innovedDeleteEntity;
