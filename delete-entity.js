@@ -172,7 +172,7 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
     }; //create the confirmation/loading box for each button
 
 
-    var buildDeleteBox = function buildDeleteBox($deleteButton) {
+    var buildDeleteBox = function buildDeleteBox($deleteButton, target) {
       if (!$deleteButton.hasClass(namespace.classPrefix + 'btn')) {
         $deleteButton.addClass(namespace.classPrefix + 'btn');
       }
@@ -180,7 +180,8 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
       ;
 
       if (!$deleteButton.find('.' + namespace.classPrefix + 'box').length) {
-        $deleteButton.append("<span class=\"".concat(namespace.classPrefix, "box\"><p>Are you sure you want to delete?</p><span class=\"").concat(namespace.classPrefix, "cancel\">Cancel</span><span class=\"").concat(namespace.classPrefix, "confirm\">Yes</span></span>"));
+        var pluralMsg = _typeof(target.guid) == 'object' ? ' the selected items?' : '?';
+        $deleteButton.append("<span class=\"".concat(namespace.classPrefix, "box\"><p>Are you sure you want to delete").concat(pluralMsg, "</p><span class=\"").concat(namespace.classPrefix, "cancel\">Cancel</span><span class=\"").concat(namespace.classPrefix, "confirm\">Yes</span></span>"));
       }
 
       return $deleteButton.find(".".concat(namespace.classPrefix, "box"));
@@ -254,7 +255,7 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
         //store each element in array and build checkboxes
         $('.js-delete-checkbox-switch').each(function () {
           switchArr.push($(this));
-          $(this).replaceWith("<input type=\"checkbox\" class=\"js-delete-checkbox\" data-target-guid=\"".concat($(this).data('target-guid'), "\" data-guid=\"").concat(guid, "\" title=\"Check to delete\" data-toggle=\"tooltip\">"));
+          $(this).replaceWith("<input type=\"checkbox\" class=\"js-delete-checkbox\" data-target-guid=\"".concat($(this).data('target-guid'), "\" data-guid=\"").concat(guid, "\" title=\"Check to delete\">"));
         });
         $switchBtn.after("<a href=\"#\" class=\"js-delete-btn js-delete-btn-multi\" data-delete=\"multi\" data-target-guid=\"".concat(guid, "\">Delete Selected</a>"));
         var textSwitchTo = switchBtn.html();
@@ -291,7 +292,7 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
       if (target == false) return false;
       var $deleteButton = $(data.event.currentTarget);
       data.event.stopPropagation();
-      var $deleteBox = buildDeleteBox($deleteButton);
+      var $deleteBox = buildDeleteBox($deleteButton, target);
 
       if (!$deleteButton.hasClass(namespace.classPrefix + 'btn-selected')) {
         $deleteButton.addClass(namespace.classPrefix + 'btn-selected');

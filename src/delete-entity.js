@@ -131,12 +131,13 @@
         };
     
         //create the confirmation/loading box for each button
-        const buildDeleteBox = function($deleteButton) {
+        const buildDeleteBox = function($deleteButton, target) {
             if(!$deleteButton.hasClass(namespace.classPrefix+'btn')) {
                 $deleteButton.addClass(namespace.classPrefix+'btn');
             };
             if(!$deleteButton.find('.'+namespace.classPrefix+'box').length) {
-                $deleteButton.append(`<span class="${namespace.classPrefix}box"><p>Are you sure you want to delete?</p><span class="${namespace.classPrefix}cancel">Cancel</span><span class="${namespace.classPrefix}confirm">Yes</span></span>`);
+                const pluralMsg = typeof target.guid == 'object' ? ' the selected items?' : '?';
+                $deleteButton.append(`<span class="${namespace.classPrefix}box"><p>Are you sure you want to delete${pluralMsg}</p><span class="${namespace.classPrefix}cancel">Cancel</span><span class="${namespace.classPrefix}confirm">Yes</span></span>`);
             }
             return $deleteButton.find(`.${namespace.classPrefix}box`);
         };
@@ -211,7 +212,7 @@
                 //store each element in array and build checkboxes
                 $('.js-delete-checkbox-switch').each(function() {
                     switchArr.push($(this));
-                    $(this).replaceWith(`<input type="checkbox" class="js-delete-checkbox" data-target-guid="${$(this).data('target-guid')}" data-guid="${guid}" title="Check to delete" data-toggle="tooltip">`)
+                    $(this).replaceWith(`<input type="checkbox" class="js-delete-checkbox" data-target-guid="${$(this).data('target-guid')}" data-guid="${guid}" title="Check to delete">`)
                 });
 
                 $switchBtn.after(`<a href="#" class="js-delete-btn js-delete-btn-multi" data-delete="multi" data-target-guid="${guid}">Delete Selected</a>`);
@@ -255,7 +256,7 @@
             const $deleteButton = $(data.event.currentTarget);
     
             data.event.stopPropagation();
-            const $deleteBox = buildDeleteBox($deleteButton);
+            const $deleteBox = buildDeleteBox($deleteButton, target);
     
             if(!$deleteButton.hasClass(namespace.classPrefix+'btn-selected')) {
                 $deleteButton.addClass(namespace.classPrefix+'btn-selected');
