@@ -15,6 +15,18 @@ $classPrefix: js-delete;
   position: initial;
 }
 
+.#{$classPrefix}-btn-multi {
+  color: #b30000;
+  text-decoration: underline;
+  margin-top: 4px;
+  display: block;
+  font-size: 12px;
+  line-height: 1.3;
+  &:hover {
+    color: #5a0000;
+  }
+}
+
 .#{$classPrefix}-btn {
   &.#{$classPrefix}-btn-selected .#{$classPrefix}-box {
     opacity: 1;

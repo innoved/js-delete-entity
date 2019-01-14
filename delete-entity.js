@@ -15,7 +15,6 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-//import innovedFlashMessage from 'js-flash-message';
 (function ($) {
   'use strict';
 
@@ -41,8 +40,8 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
 
     var errorMsg = function errorMsg(target) {
       var targetName = target == undefined ? 'item' : target.name;
-      var s = _typeof(target.guid) == 'object' ? 's' : '';
-      innovedFlashMessage.create('error', 'Something went wrong', "The ".concat(targetName + s, " could not be deleted"));
+      var pluralItem = _typeof(target.guid) == 'object' && target.guid.length > 1 ? 's' : '';
+      innovedFlashMessage.create('error', 'Something went wrong', "The ".concat(targetName + pluralItem, " could not be deleted"));
       console.log('Something went wrong', "The ".concat(targetName, " could not be deleted"));
     }; //element exit animation, accepts preset strings and custom function
 
@@ -84,55 +83,43 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
       }
 
       return this;
-    }; //on deletion success. mainly UI stuff
+    };
+
+    var removeDeleteBox = function removeDeleteBox($deleteBox, $deleteButton) {
+      $deleteBox.remove();
+      $deleteButton.removeClass(namespace.classPrefix + 'btn-selected');
+    }; //on deletion success
 
 
     var deleteSuccess = function deleteSuccess(target, $deleteButton, $deleteBox, $targetElement, animation) {
       settings.onDeleteSuccess.call(this);
       $deleteBox.addClass(namespace.classPrefix + 'box-deleted');
-      $deleteButton.removeClass(namespace.classPrefix + 'btn-selected');
-      setTimeout(function () {
-        $deleteBox.removeClass(namespace.classPrefix + 'box-loading').removeClass(namespace.classPrefix + 'box-deleted');
-      }, 1000); // function timeout(ms) {
-      //     return new Promise(res => setTimeout(res, ms));
-      // }
-      // function removeLoadingState() {
-      //     $deleteBox.removeClass(namespace.classPrefix+'box-loading').removeClass(namespace.classPrefix+'box-deleted');
-      // }
-      // function removeBox() {
-      //     $deleteBox.remove();
-      // }
-      // async function fireEvents() {
-      //     await timeout(1000);
-      //     removeLoadingState();
-      //     removeBox();
-      // }
-      // fireEvents();
 
       if (animation != false && animation != undefined) {
         setTimeout(function () {
-          $($(target)[0].$element).each(function () {
-            exitAnimation($(this), animation);
+          $($(target)[0].$element).each(function (i) {
+            var $this = $(this);
+            setTimeout(function () {
+              exitAnimation($this, animation);
+            }, i * 400);
           });
         }, 500);
       }
 
       ;
-      var s = _typeof(target.guid) == 'object' ? 's' : '';
-      innovedFlashMessage.create('success', "The ".concat(target.name + s, " has been deleted"));
-    }; //deletion request function
+      var pluralItem = _typeof(target.guid) == 'object' && target.guid.length > 1 ? 's' : '';
+      var pluralHas = _typeof(target.guid) == 'object' && target.guid.length > 1 ? 'have' : 'has';
+      innovedFlashMessage.create('success', '', "The ".concat(target.name + pluralItem, " ").concat(pluralHas, " been deleted"), {
+        preventDuplicates: true
+      });
+    }; //request to backend
 
 
-    var runDelete = function runDelete(target, $deleteButton, $deleteBox, animation) {
+    var deletionRequest = function deletionRequest(url, data, target, $deleteButton, $deleteBox, animation) {
       var _this = this;
 
-      var data = {
-        _token: $('meta[name="_token"]').attr('content')
-      }; //if were sending multiple guids let the backend know
-
-      data.multi = _typeof(target.guid) == 'object' ? true : false;
       $.ajax({
-        url: $deleteButton[0].href,
+        url: url,
         type: 'DELETE',
         data: data,
         dataType: 'json'
@@ -145,23 +132,43 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
 
           ;
           deleteSuccess(target, $deleteButton, $deleteBox, target.$element, animation);
+          setTimeout(function () {
+            removeDeleteBox($deleteBox, $deleteButton);
+          }, 1000);
         } else {
+          removeDeleteBox($deleteBox, $deleteButton);
           settings.onDeleteFail.call(_this);
-          errorMsg(target);
           console.log(response);
+          errorMsg(target);
         }
 
         ;
       }).fail(function (xhr, textStatus, errorThrown) {
+        removeDeleteBox($deleteBox, $deleteButton);
         settings.onDeleteFail.call(_this);
+        errorMsg(target);
         $.error('Request Failed on ' + namespace.global + ' ' + textStatus);
         console.log(errorThrown);
-      }).always(function (response) {
-        $deleteButton.removeClass(namespace.classPrefix + 'btn-selected');
-        setTimeout(function () {
-          $deleteBox.removeClass(namespace.classPrefix + 'box-loading').removeClass(namespace.classPrefix + 'box-deleted');
-        }, 1000);
       });
+    }; //deletion request function
+
+
+    var runDelete = function runDelete(target, $deleteButton, $deleteBox, animation) {
+      var data = {
+        _token: $('meta[name="_token"]').attr('content')
+      }; //if were deleting multiple elements run a deletion request for each element
+
+      if (_typeof(target.guid) == 'object') {
+        data.multi = true;
+        var url = $('.js-delete-checkbox-switch-btn').data('href');
+        $($(target)[0].$element).each(function () {
+          var thisUrl = url.replace('-guid-', $(this).data('guid'));
+          deletionRequest(thisUrl, data, target, $deleteButton, $deleteBox, animation);
+        });
+      } else {
+        data.multi = false;
+        deletionRequest($deleteButton[0].href, data, target, $deleteButton, $deleteBox, animation);
+      }
     }; //create the confirmation/loading box for each button
 
 
@@ -226,10 +233,11 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
     this.checkboxSwitch = function ($switchBtn) {
       var guid = _toConsumableArray(Array(10)).map(function (i) {
         return (~~(Math.random() * 36)).toString(36);
-      }).join(''); //grab stored elements from array and remove checkboxes
+      }).join('');
 
+      var switchBtn = $('.js-delete-checkbox-switch-btn'); //grab stored elements from array and remove checkboxes
 
-      if ($('#js-delete-btn-multi').length) {
+      if ($('.js-delete-btn-multi').length) {
         if (options != undefined && 'innerSwitch' in options) {
           options.innerSwitch.forEach(function (entry) {
             var targetGuid = entry[0].dataset.targetGuid;
@@ -237,20 +245,24 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
               $(this).replaceWith(entry[0]);
             });
           });
-          $('#js-delete-btn-multi').remove();
+          $('.js-delete-btn-multi').remove();
           switchArr = [];
-          $('#js-delete-btn').innovedDeleteEntity();
+          switchBtn.html(options.textSwitchTo);
+          $('.js-delete-btn').innovedDeleteEntity();
         }
       } else {
-        //store each element in array and build render checkboxes
+        //store each element in array and build checkboxes
         $('.js-delete-checkbox-switch').each(function () {
           switchArr.push($(this));
-          $(this).replaceWith("<input type=\"checkbox\" class=\"js-delete-checkbox\" data-target-guid=\"".concat($(this).data('target-guid'), "\" data-guid=\"").concat(guid, "\">"));
+          $(this).replaceWith("<input type=\"checkbox\" class=\"js-delete-checkbox\" data-target-guid=\"".concat($(this).data('target-guid'), "\" data-guid=\"").concat(guid, "\" title=\"Check to delete\" data-toggle=\"tooltip\">"));
         });
-        $switchBtn.after("<button class=\"js-delete-btn\" id=\"js-delete-btn-multi\" data-delete=\"multi\" data-target-guid=\"".concat(guid, "\">Delete Selected</button>")); //assign the deletion object and pass the element array
+        $switchBtn.after("<a href=\"#\" class=\"js-delete-btn js-delete-btn-multi\" data-delete=\"multi\" data-target-guid=\"".concat(guid, "\">Delete Selected</a>"));
+        var textSwitchTo = switchBtn.html();
+        switchBtn.html(switchBtn.data('text-back')); //assign the deletion object and pass the element array
 
-        $('#js-delete-btn-multi').innovedDeleteEntity({
-          innerSwitch: switchArr
+        $('.js-delete-btn-multi').innovedDeleteEntity({
+          innerSwitch: switchArr,
+          textSwitchTo: textSwitchTo
         });
       }
     };
@@ -285,6 +297,7 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
         $deleteButton.addClass(namespace.classPrefix + 'btn-selected');
         $deleteButton.find(".".concat(namespace.classPrefix, "cancel")).off('click').on('click', function () {
           $deleteButton.removeClass(namespace.classPrefix + 'btn-selected');
+          $deleteBox.remove();
           return false;
         }); //if the delete button is in a dropdown, hide the confirmation on close
 
@@ -362,7 +375,7 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
         case 'confirm':
           innovedDeleteEntity.confirm({
             event: e,
-            animation: 'fadeOut'
+            animation: 'slideRight'
           });
           break;
 
@@ -377,7 +390,7 @@ function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterat
           innovedDeleteEntity.confirm({
             event: e,
             confirmType: 'multi',
-            animation: 'fadeOut'
+            animation: 'slideRight'
           });
           break;
 

@@ -1,5 +1,3 @@
-//import innovedFlashMessage from 'js-flash-message';
-
 (function($) {
 
     'use strict';
@@ -28,8 +26,8 @@
         */
         const errorMsg = function(target) {
             const targetName = target == undefined ? 'item' : target.name;
-            const s = typeof target.guid == 'object' ? 's' : '';
-            innovedFlashMessage.create('error', 'Something went wrong', `The ${targetName + s} could not be deleted`);
+            const pluralItem = typeof target.guid == 'object' && target.guid.length > 1 ? 's' : '';
+            innovedFlashMessage.create('error', 'Something went wrong', `The ${targetName+pluralItem} could not be deleted`);
             console.log('Something went wrong', `The ${targetName} could not be deleted`);
         };
     
@@ -62,56 +60,34 @@
             }
             return this;
         };
+
+        const removeDeleteBox = function($deleteBox, $deleteButton) {
+            $deleteBox.remove();
+            $deleteButton.removeClass(namespace.classPrefix+'btn-selected');
+        };
     
-        //on deletion success. mainly UI stuff
+        //on deletion success
         const deleteSuccess = function(target, $deleteButton, $deleteBox, $targetElement, animation) {
             settings.onDeleteSuccess.call(this);
             $deleteBox.addClass(namespace.classPrefix+'box-deleted');
-            $deleteButton.removeClass(namespace.classPrefix+'btn-selected');
-
-            setTimeout(function() {
-                $deleteBox.removeClass(namespace.classPrefix+'box-loading').removeClass(namespace.classPrefix+'box-deleted');
-            }, 1000);
-
-            // function timeout(ms) {
-            //     return new Promise(res => setTimeout(res, ms));
-            // }
-
-            // function removeLoadingState() {
-            //     $deleteBox.removeClass(namespace.classPrefix+'box-loading').removeClass(namespace.classPrefix+'box-deleted');
-            // }
-
-            // function removeBox() {
-            //     $deleteBox.remove();
-            // }
-
-            // async function fireEvents() {
-            //     await timeout(1000);
-            //     removeLoadingState();
-            //     removeBox();
-            // }
-
-            // fireEvents();
-
             if(animation != false && animation != undefined) {
                 setTimeout(function() {
-                    $($(target)[0].$element).each(function() {
-                        exitAnimation($(this), animation);
+                    $($(target)[0].$element).each(function(i) {
+                        const $this = $(this);
+                        setTimeout(function() {
+                            exitAnimation($this, animation);
+                        }, i*400);
                     });
                 }, 500);
             };
-            const s = typeof target.guid == 'object' ? 's' : '';
-            innovedFlashMessage.create('success', `The ${target.name + s} has been deleted`);
+            const pluralItem = typeof target.guid == 'object' && target.guid.length > 1 ? 's' : '';
+            const pluralHas = typeof target.guid == 'object' && target.guid.length > 1 ? 'have' : 'has';
+            innovedFlashMessage.create('success', '', `The ${target.name+pluralItem} ${pluralHas} been deleted`, {preventDuplicates: true});
         };
-    
-        //deletion request function
-        const runDelete = function(target, $deleteButton, $deleteBox, animation) {
-            const data = { _token: $('meta[name="_token"]').attr('content') };
 
-            //if were sending multiple guids let the backend know
-            data.multi = typeof target.guid == 'object' ? true : false;
-            
-            $.ajax({url: $deleteButton[0].href, type: 'DELETE', data:data, dataType: 'json'
+        //request to backend
+        const deletionRequest = function(url, data, target, $deleteButton, $deleteBox, animation) {
+            $.ajax({url: url, type: 'DELETE', data:data, dataType: 'json'
             }).done(response => {
                 if(response.success != false) {
                     if(response.reload == true) {
@@ -119,21 +95,39 @@
                         return false;
                     };
                     deleteSuccess(target, $deleteButton, $deleteBox, target.$element, animation);
+                    setTimeout(function() { removeDeleteBox($deleteBox, $deleteButton) },1000);
                 } else {
+                    removeDeleteBox($deleteBox, $deleteButton);
                     settings.onDeleteFail.call(this);
-                    errorMsg(target);
                     console.log(response);
+                    errorMsg(target);
                 };
             }).fail((xhr, textStatus, errorThrown) => {
+                removeDeleteBox($deleteBox, $deleteButton);
                 settings.onDeleteFail.call(this);
+                errorMsg(target);
                 $.error('Request Failed on '+namespace.global+' '+textStatus);
                 console.log(errorThrown);
-            }).always(response => {
-                $deleteButton.removeClass(namespace.classPrefix+'btn-selected');
-                setTimeout(function(){
-                    $deleteBox.removeClass(namespace.classPrefix+'box-loading').removeClass(namespace.classPrefix+'box-deleted');
-                },1000);
             });
+        };
+    
+        //deletion request function
+        const runDelete = function(target, $deleteButton, $deleteBox, animation) {
+            const data = { _token: $('meta[name="_token"]').attr('content') };
+
+            //if were deleting multiple elements run a deletion request for each element
+            if(typeof target.guid == 'object') {
+                data.multi = true;
+                let url = $('.js-delete-checkbox-switch-btn').data('href');
+                $($(target)[0].$element).each(function() {
+                    const thisUrl = url.replace('-guid-', $(this).data('guid'));
+                    deletionRequest(thisUrl, data, target, $deleteButton, $deleteBox, animation);
+                });
+            } else {
+                data.multi = false;
+                deletionRequest($deleteButton[0].href, data, target, $deleteButton, $deleteBox, animation);
+            }
+            
         };
     
         //create the confirmation/loading box for each button
@@ -196,9 +190,10 @@
         //switch specific targets with checkboxes for multiple deletion method and vice versa
         this.checkboxSwitch = function($switchBtn) {
             const guid = [...Array(10)].map(i=>(~~(Math.random()*36)).toString(36)).join('');
+            const switchBtn = $('.js-delete-checkbox-switch-btn');
 
             //grab stored elements from array and remove checkboxes
-            if ($('#js-delete-btn-multi').length) {
+            if ($('.js-delete-btn-multi').length) {
                 if(options != undefined && 'innerSwitch' in options) {
                     options.innerSwitch.forEach(function(entry) {
                         const targetGuid = entry[0].dataset.targetGuid;
@@ -206,21 +201,27 @@
                             $(this).replaceWith(entry[0]);
                         });
                     });
-                    $('#js-delete-btn-multi').remove();
+                    $('.js-delete-btn-multi').remove();
                     switchArr = [];
-                    $('#js-delete-btn').innovedDeleteEntity();
+                    switchBtn.html(options.textSwitchTo);
+                    $('.js-delete-btn').innovedDeleteEntity();
                 }
             } else {
-                //store each element in array and build render checkboxes
+
+                //store each element in array and build checkboxes
                 $('.js-delete-checkbox-switch').each(function() {
                     switchArr.push($(this));
-                    $(this).replaceWith(`<input type="checkbox" class="js-delete-checkbox" data-target-guid="${$(this).data('target-guid')}" data-guid="${guid}">`)
+                    $(this).replaceWith(`<input type="checkbox" class="js-delete-checkbox" data-target-guid="${$(this).data('target-guid')}" data-guid="${guid}" title="Check to delete" data-toggle="tooltip">`)
                 });
-                $switchBtn.after(`<button class="js-delete-btn" id="js-delete-btn-multi" data-delete="multi" data-target-guid="${guid}">Delete Selected</button>`);
+
+                $switchBtn.after(`<a href="#" class="js-delete-btn js-delete-btn-multi" data-delete="multi" data-target-guid="${guid}">Delete Selected</a>`);
+                const textSwitchTo = switchBtn.html();
+                switchBtn.html(switchBtn.data('text-back'));
 
                 //assign the deletion object and pass the element array
-                $('#js-delete-btn-multi').innovedDeleteEntity({
-                    innerSwitch: switchArr
+                $('.js-delete-btn-multi').innovedDeleteEntity({
+                    innerSwitch: switchArr,
+                    textSwitchTo: textSwitchTo
                 });
             }
             
@@ -261,6 +262,7 @@
     
                 $deleteButton.find(`.${namespace.classPrefix}cancel`).off('click').on('click',function() {
                     $deleteButton.removeClass(namespace.classPrefix+'btn-selected');
+                    $deleteBox.remove();
                     return false;
                 });
     
@@ -344,13 +346,13 @@
             */
             switch($this.data('delete')) {
                 case 'confirm':
-                    innovedDeleteEntity.confirm({event: e,  animation: 'fadeOut'});
+                    innovedDeleteEntity.confirm({event: e,  animation: 'slideRight'});
                     break;
                 case 'modal':
                     innovedDeleteEntity.confirm({event: e,  confirmType: 'modal'});
                     break;
                 case 'multi':
-                    innovedDeleteEntity.confirm({event: e,  confirmType: 'multi', animation: 'fadeOut'});
+                    innovedDeleteEntity.confirm({event: e,  confirmType: 'multi', animation: 'slideRight'});
                     break;
                 case 'persist-to-db':
                     innovedDeleteEntity.confirm({event: e,  deleteMethod: 'persist-to-db', animation: 'slideRight'});
