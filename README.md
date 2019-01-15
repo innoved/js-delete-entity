@@ -28,7 +28,7 @@ Using this method will allow for:
 
 ## Quick Usage:
 
-    <a class="js-ems-delete-btn" data-delete="confirm" data-target-guid="guid_to_delete" data-target-name="lang_name_key" href="url_to_controller"></a>
+    <a class="js-delete-btn" data-delete="confirm" data-target-guid="guid_to_delete" data-target-name="lang_name_key" href="url_to_controller"></a>
 
 Available methods: 
 
