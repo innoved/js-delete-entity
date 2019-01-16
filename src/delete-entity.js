@@ -72,6 +72,7 @@
             $deleteBox.addClass(namespace.classPrefix+'box-deleted');
             if(animation != false && animation != undefined) {
                 setTimeout(function() {
+                    //run an increment timer here to animate each item individually
                     $($(target)[0].$element).each(function(i) {
                         const $this = $(this);
                         setTimeout(function() {
@@ -158,6 +159,7 @@
                 });
 
                 if(guids.length == 0 || elements.length == 0 ) {
+                    innovedFlashMessage.create('warning', 'No items have been selected', 'Please check the items you wish to delete', {preventDuplicates: true});
                     return false;
                 }
 

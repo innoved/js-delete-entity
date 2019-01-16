@@ -32,11 +32,11 @@ $classPrefix: js-delete;
     opacity: 1;
     top: -90px;
     width: 275px;
-    height: 85px;
+    height: auto;
+    padding-bottom: 15px;
     overflow: visible;
     -webkit-transition-delay: 0s, 0s, 0s, 0s;
     @include transition(opacity 0.3s, top 0.3s, width 0s 0s, height 0s 0s);
-
   }
   .#{$classPrefix}-box {
     position: absolute;
@@ -73,7 +73,7 @@ $classPrefix: js-delete;
       width: auto;
       height: auto;
       padding: 0 10px 10px 10px;
-      left: 0;
+      left: -50px;
       right: 0;
       span.#{$classPrefix}-cancel {
           margin-bottom: 7px;
